@@ -1,0 +1,9 @@
+#!genebuild-last-updated 2014-09
+CDS
+Selenocysteine
+UTR
+exon
+gene
+start_codon
+stop_codon
+transcript
