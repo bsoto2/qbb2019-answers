@@ -16,7 +16,6 @@ for i, line in enumerate( open(sys.argv[1]) ):
         continue
     fields = line.rstrip('\r').split('\t')
     fpkm1.append( float(fields[11]) )
-    exons1.append( int(fields[6]) )
 
 exons2 = []
 fpkm2 = []
@@ -25,7 +24,6 @@ for i, line in enumerate( open(sys.argv[2]) ):
         continue
     fields = line.rstrip('\r').split('\t')
     fpkm2.append( float(fields[11]) )
-    exons2.append( int(fields[6] ) )
 
 
 fpkm1 = np.array(fpkm1)
