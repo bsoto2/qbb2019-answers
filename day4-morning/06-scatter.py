@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as stats
 
-exons1 = []
 fpkm1 = []
 for i, line in enumerate( open(sys.argv[1]) ):
     if i == 0:
@@ -17,7 +16,6 @@ for i, line in enumerate( open(sys.argv[1]) ):
     fields = line.rstrip('\r').split('\t')
     fpkm1.append( float(fields[11]) )
 
-exons2 = []
 fpkm2 = []
 for i, line in enumerate( open(sys.argv[2]) ):
     if i == 0:
