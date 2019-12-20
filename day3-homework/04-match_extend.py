@@ -34,11 +34,14 @@ for ident1, sequence1 in reader2:
 for ident2, sequence2 in reader:
     count = 0
     for i in range( 0, len(sequence1) - k + 1 ):
-        for kmerQ == kmer:
             while kmerQ == kmer:
                 kmerN = kmer + 1 + k
                 if kmerN == extk:
+                    count += 1
                     continue
+                else: 
+                    print(kmerN)
+                    print(count)
                 
     
             
