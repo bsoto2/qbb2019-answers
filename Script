@@ -1,0 +1,137 @@
+#!/usr/bin/env python2
+
+import numpy as np
+import sys
+import pandas as pd
+import matplotlib.pyplot as plt
+import scipy
+from scipy import stats
+from scipy.cluster.hierarchy import dendrogram, linkage, leaves_list
+from scipy.spatial.distance import pdist
+from scipy.stats import ttest_ind
+
+fil = open(sys.argv[1])
+    
+df = pd.read_csv(fil, sep='\t', index_col='gene')
+# print(df[1])
+# print(df['CFU'])
+data1 = df[['CFU', 'poly', 'unk', 'int', 'mys', 'mid']]
+data = df[['CFU', 'poly']]
+# print(data1)
+
+linked1 = linkage(data1, 'ward')
+hmap = pd.DataFrame(linked1)
+linked = linkage(data, method='average',metric='euclidean')
+leaved = leaves_list(linked)
+# hmap = pd.DataFrame(leaved)
+# plt.rcParams.update({"figure.figsize": (15,10)})
+# plt.imshow(leaved1)
+# cb=colorbar(label="$Log_2$-fold Change"); cb.set_ticks((-10,-5,0,5,10)); cb.ax.set_aspect(20)
+# xlabel("Hours After Fertilization"); xticks(range(0,13)); plt.gca().set_xticklabels(T); ylabel("Gene")
+# plt.show()
+# print(linked1)
+# print(leaved1)
+
+#
+# #Heatmap
+plt.pcolor(linked)
+plt.yticks(np.arange(0.5, len(hmap.index), 1), hmap.index)
+plt.xticks(np.arange(0.5, len(hmap.columns), 1), hmap.columns)
+plt.show()
+
+
+# #Dendrogram
+plt.rcParams.update({"figure.figsize": (20,15)})
+R=dendrogram(linked, truncate_mode='level', p=6, orientation='left', leaf_font_size=11, show_contracted=True)
+plt.show()
+pass
+
+##ScatterPlot with Clusters
+K = 2
+diff = 1
+j=0
+Centroids = (data.sample(n=K))
+
+while(diff!=0):
+    XD=data
+    i=1
+    for index1,row_c in Centroids.iterrows():
+        ED=[]
+        for index2,row_d in XD.iterrows():
+            d1=(row_c["CFU"]-row_d["CFU"])**2
+            d2=(row_c["poly"]-row_d["poly"])**2
+            d=np.sqrt(d1+d2)
+            ED.append(d)
+        data[i]=ED
+        i=i+1
+
+    C=[]
+    for index,row in data.iterrows():
+        min_dist=row[1]
+        pos=1
+        for i in range(K):
+            if row[i+1] < min_dist:
+                min_dist = row[i+1]
+                pos=i+1
+        C.append(pos)
+    data["Cluster"]=C
+    Centroids_new = data.groupby(["Cluster"]).mean()[["poly","CFU"]]
+    if j == 0:
+        diff=1
+        j=j+1
+    else:
+        diff = (Centroids_new['poly'] - Centroids['poly']).sum() + (Centroids_new['CFU'] - Centroids['CFU']).sum()
+        print(diff.sum())
+    Centroids = data.groupby(["Cluster"]).mean()[["poly","CFU"]]
+color=['blue','green','cyan']
+for k in range(K):
+    data=data[data["Cluster"]==k+1]
+    plt.scatter(data["CFU"],data["poly"],c=color[k])
+plt.scatter(data["CFU"], data["poly"], c='pink')
+plt.scatter(Centroids["CFU"], Centroids["poly"], c='red')
+plt.xlabel('CFU')
+plt.ylabel('poly')
+plt.show()
+
+##Differential Expression
+## gl = data.groupby('gene').mean()
+## print(gl)
+gl = []
+for i, genes in enumerate(data1.index):
+    i = 0
+    gl.append(genes)
+    i += 1
+lkm = []
+deg = {}
+# print(data.loc[gl[0]])
+i = 0
+kk = len(gl)
+while i != kk:
+    aa1 = data1['CFU'].loc[gl[i]]
+    aa2 = data1['poly'].loc[gl[i]]
+    aa3 = data1['mys'].loc[gl[i]]
+    aa4 = data1['mid'].loc[gl[i]]
+    aaa1 = aa1 + aa2 + aa3 + aa4
+    aam1 = (aa1 + aa2) / 2
+    aam2 = (aa3 + aa4) / 2
+    aastd1 = np.std([aa1, aa2])
+    aastd2 = np.std([aa2, aa2])
+    aastpop = ((aastd1**2)+(aastd2**2))/2
+    aastden = np.sqrt(aastpop)
+    t = (aam1 - aam2) / aastden
+    lkm.append(t)
+    i += 1
+# print(lkm)
+mno = 0
+while mno != kk:
+    deg[gl[mno]] = lkm[mno]
+    mno += 1
+# print(deg)
+
+sorte = sorted(deg.items(), key=lambda x: x[1])
+print(sorte)
+
+aa1 = data['CFU']
+aa2 = data['poly']
+aa = ttest_ind(aa1, aa2)
+print(aa)
